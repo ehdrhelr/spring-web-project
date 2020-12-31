@@ -10,19 +10,8 @@
 		]]>
 	</select>
 	
-	<select id="getListWithPaging" resultType="org.zerock.domain.BoardVO">
-		<![CDATA[
-			select 
-				bno, title, writer, regdate, updateDate
-			from
-				(
-				select /*+INDEX_DESC(tbl_board pk_board) */
-					rownum rn, bno, title, content, writer, regdate, updateDate
-				from
-					tbl_board
-				where 
-		]]>
-			<trim prefix="(" suffix=") AND " prefixOverrides="OR">
+	<sql id="criteria">
+		<trim prefix="(" suffix=") AND " prefixOverrides="OR">
 				<foreach item='type' collection="typeArr">
 					<trim prefix="OR">
 						<choose>
@@ -39,6 +28,23 @@
 					</trim>
 				</foreach>
 			</trim>	
+	</sql>
+	
+	<select id="getListWithPaging" resultType="org.zerock.domain.BoardVO">
+		<![CDATA[
+			select 
+				bno, title, writer, regdate, updateDate
+			from
+				(
+				select /*+INDEX_DESC(tbl_board pk_board) */
+					rownum rn, bno, title, content, writer, regdate, updateDate
+				from
+					tbl_board
+				where 
+		]]>
+		
+		<include refid="criteria"></include>
+		
 		<![CDATA[		
 				rownum <= #{pageNum} * #{amount}
 				)
@@ -79,6 +85,11 @@
 	</update>
 	
 	<select id="getTotalCount" resultType="int">
-		select count(*) from tbl_board where bno > 0
+		select count(*) from tbl_board 
+		where
+			
+		<include refid="criteria"></include>
+			
+		bno > 0
 	</select>
 </mapper>
